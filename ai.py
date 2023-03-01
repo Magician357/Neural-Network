@@ -63,7 +63,7 @@ class builder:
     def rebuild(self,best: list):
         current=best
         n=0
-        while len(current) > self.amount:
+        while len(current) < self.amount:
             curnet=best[n]
             n=(n+1)%len(best)
             curnet.mutate()
@@ -74,12 +74,14 @@ def disttuple(a,b):
     dists=[np.absolute(a[n]-b[n]) for n in range(len(a))]
     return sum(dists)/len(dists)
 
-def sortdict(x):
-    sort={k: v for k, v in sorted(x.items(), key=lambda item: item[1])}
-    cur=[]
-    for key in sort:
-        cur.append(key)
-    return cur
+def sortdict(d):
+    #sort={k: v for k, v in sorted(x.items(), key=lambda item: item[1])}
+    #cur=[]
+    #for key in sort:
+    #    cur.append(key)
+    #return cur
+    sorted_dict = {k: v for k, v in sorted(d.items(), key=lambda item: item[1])}
+    return list(sorted_dict.keys())
     
 
 class teacher:
@@ -91,7 +93,6 @@ class teacher:
             score=[]
             for data in self.data:
                 inputs,expected=list(data[0]),data[1]
-                print(inputs)
                 got=tuple(network.forward(inputs))
                 score.append(np.power(disttuple(got,expected),2))
             cd[n]=sum(score)/len(score)
@@ -115,6 +116,7 @@ class trainer:
     def __init__(self,dataset: tuple, amount: int, layersizes: list,activation=nf,final=nf):
         self.builder=builder(amount,layersizes,activation,final)
         self.teacher=teacher(dataset)
+        print("worked")
     def train(self):
         new=self.teacher.test(self.builder.full)
         self.builder.rebuild(new)
