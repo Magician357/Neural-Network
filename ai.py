@@ -7,6 +7,9 @@ def softmax(inputs):
     total = sum(temp)
     return [t / total for t in temp]
 
+def smooth(inputs,a=5):
+    return [x/(abs(x)+a) for x in inputs]
+
 class layer:
     def __init__(self,numnodesIn,numnodesOut):
         self.nni,self.nno=numnodesIn,numnodesOut
@@ -22,15 +25,8 @@ class layer:
             self.outputs[n]+=self.b[n]
         return self.outputs
     def mutate(self):
-        mc=0.5
-        for nA in range(self.nno):
-            for nB in range(self.nni):
-                if random.random() < mc:
-                    mc*=0.75
-                    self.w[nA][nB]+=random.random()-0.5
-        for n in range(self.nno):
-            if random.random() < 0.25:
-                self.b[n]+=random.random()-0.5
+        self.w=[[self.w[nA][nB]+random.random()-0.5 if random.random() < 0.4 else self.w[nA][nB] for nB in range(self.nni)] for nA in range(self.nno)]
+        self.b=[self.b[n]+random.random()-0.5 if random.random() < 0.25 else self.b[n] for n in range(self.nno)]
 
 class network:
     def __init__(self,layersizes,activation,final):
@@ -65,18 +61,13 @@ def average(lst):
     return sum(lst) / len(lst)
 
 def score(res,expect):
-    cur=[]
-    for n in range(len(expect)):
-        cur.append(abs(res[n]-expect[n])**2)
+    cur=[abs(res[n]-expect[n])**2 for n in range(len(expect))]
     return average(cur)
 
 class trainer:
     def __init__(self,dataset,amount,layersizes,activation,final):
         self.amount=amount
-        cur=[]
-        for _ in range(amount):
-            cur.append(network(layersizes,activation,final))
-        self.full=cur
+        self.full=[network(layersizes,activation,final) for _ in range(amount)]
         self.dataset=dataset
         self.results=[[n,0] for n in range(amount)]
     def train(self):
