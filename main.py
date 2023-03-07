@@ -1,4 +1,5 @@
 from ai import *
+#https://replit.com/@Magic-Man/cython
 import random
 from smalldataset import data
 from smallerdataset import full
